@@ -1,4 +1,4 @@
-import { DIFFICULTIES } from '../config/gameConfig';
+import { DIFFICULTIES } from '../config/gameConfig.js';
 
 export { DIFFICULTIES };
 
@@ -50,6 +50,7 @@ export const generateCompleteBoard = () => {
 };
 
 export const solveBoard = (inputBoard) => {
+  if (findConflicts(inputBoard).size > 0) return null;
   const board = inputBoard.map(row => [...row]);
 
   const solve = () => {
@@ -73,7 +74,7 @@ export const solveBoard = (inputBoard) => {
   return solve() ? board : null;
 };
 
-const countSolutions = (board, count = { value: 0 }) => {
+export const countSolutions = (board, count = { value: 0 }) => {
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       if (board[row][col] === 0) {

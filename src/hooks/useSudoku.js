@@ -36,7 +36,19 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
     setCurrentBoard(puzzle.initial.map(row => [...row]));
     setSolution(puzzle.solution);
     setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => [])));
-    setSelectedCell({ row: 0, col: 0 });
+    
+    let firstEmpty = null;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (puzzle.initial[r][c] === 0) {
+          firstEmpty = { row: r, col: c };
+          break;
+        }
+      }
+      if (firstEmpty) break;
+    }
+    setSelectedCell(firstEmpty || { row: 0, col: 0 });
+
     setIsNotesMode(false);
     setTimer(0);
     setIsPaused(false);
@@ -71,7 +83,7 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const val = currentBoard[r][c];
-      if (val >= 1 && val <= 9) {
+      if (val === solution[r][c] && val >= 1 && val <= 9) {
         remainingNumbers[val] = Math.max(0, remainingNumbers[val] - 1);
       }
     }
@@ -87,6 +99,8 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
     const { row, col } = selectedCell;
 
     if (initialBoard[row][col] !== 0) return;
+
+    if (!isNotesMode && currentBoard[row][col] === num) return;
 
     setHistory(prev => [
       ...prev,
@@ -123,16 +137,18 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
         const newNotes = prev.map(r => r.map(c => [...c]));
         newNotes[row][col] = [];
 
-        const startRow = Math.floor(row / 3) * 3;
-        const startCol = Math.floor(col / 3) * 3;
+        if (isCorrect) {
+          const startRow = Math.floor(row / 3) * 3;
+          const startCol = Math.floor(col / 3) * 3;
 
-        for (let i = 0; i < 9; i++) {
-          newNotes[row][i] = newNotes[row][i].filter(n => n !== num);
-          newNotes[i][col] = newNotes[i][col].filter(n => n !== num);
-        }
-        for (let r = startRow; r < startRow + 3; r++) {
-          for (let c = startCol; c < startCol + 3; c++) {
-            newNotes[r][c] = newNotes[r][c].filter(n => n !== num);
+          for (let i = 0; i < 9; i++) {
+            newNotes[row][i] = newNotes[row][i].filter(n => n !== num);
+            newNotes[i][col] = newNotes[i][col].filter(n => n !== num);
+          }
+          for (let r = startRow; r < startRow + 3; r++) {
+            for (let c = startCol; c < startCol + 3; c++) {
+              newNotes[r][c] = newNotes[r][c].filter(n => n !== num);
+            }
           }
         }
         return newNotes;
@@ -257,7 +273,19 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
   const restartGame = useCallback(() => {
     setCurrentBoard(initialBoard.map(row => [...row]));
     setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => [])));
-    setSelectedCell({ row: 0, col: 0 });
+    
+    let firstEmpty = null;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (initialBoard[r][c] === 0) {
+          firstEmpty = { row: r, col: c };
+          break;
+        }
+      }
+      if (firstEmpty) break;
+    }
+    setSelectedCell(firstEmpty || { row: 0, col: 0 });
+
     setTimer(0);
     setIsPaused(false);
     setMistakes(0);

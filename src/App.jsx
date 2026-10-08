@@ -125,6 +125,7 @@ export function App() {
 
           <NumberPad
             remainingNumbers={remainingNumbers}
+            isNotesMode={isNotesMode}
             onInputNumber={inputNumber}
           />
 
