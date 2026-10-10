@@ -81,7 +81,8 @@ export function App() {
 
       if (e.key === 'n' || e.key === 'N') {
         toggleNotesMode();
-      } else if (e.key === 'u' || e.key === 'U') {
+      } else if (e.key === 'u' || e.key === 'U' || ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z'))) {
+        e.preventDefault();
         undo();
       } else if (e.key === 'h' || e.key === 'H') {
         giveHint();
