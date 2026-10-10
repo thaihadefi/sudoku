@@ -5,19 +5,23 @@ export const Controls = ({
   canUndo,
   isNotesMode,
   hintsRemaining = MAX_HINTS,
+  isPaused = false,
+  isWon = false,
   onUndo,
   onErase,
   onToggleNotes,
   onHint,
   onRestart
 }) => {
+  const isBlocked = isPaused || isWon;
+
   return (
     <div className="game-controls">
       <button
         type="button"
         className="control-btn"
         onClick={onUndo}
-        disabled={!canUndo}
+        disabled={!canUndo || isBlocked}
         title="Undo last move (U)"
       >
         <div className="control-icon">
@@ -32,6 +36,7 @@ export const Controls = ({
         type="button"
         className="control-btn"
         onClick={onErase}
+        disabled={isBlocked}
         title="Erase cell (Backspace / Delete)"
       >
         <div className="control-icon">
@@ -48,6 +53,7 @@ export const Controls = ({
         type="button"
         className={`control-btn ${isNotesMode ? 'control-btn-active' : ''}`}
         onClick={onToggleNotes}
+        disabled={isBlocked}
         title="Toggle pencil notes (N)"
       >
         <div className="control-icon">
@@ -65,7 +71,7 @@ export const Controls = ({
         type="button"
         className="control-btn"
         onClick={onHint}
-        disabled={hintsRemaining <= 0}
+        disabled={hintsRemaining <= 0 || isBlocked}
         title={`Get a hint (+30s penalty) (H) - ${hintsRemaining} remaining`}
       >
         <div className="control-icon">
@@ -83,6 +89,7 @@ export const Controls = ({
         type="button"
         className="control-btn"
         onClick={onRestart}
+        disabled={isBlocked}
         title="Reset current board"
       >
         <div className="control-icon">

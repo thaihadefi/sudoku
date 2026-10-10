@@ -507,6 +507,18 @@
   color: var(--accent-success);
 }
 
+.numpad-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.numpad-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+
 .numpad-btn-completed {
   opacity: 0.25;
   cursor: not-allowed;

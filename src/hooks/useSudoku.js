@@ -10,14 +10,35 @@ import {
   HINT_PENALTY_SECONDS
 } from '../config/gameConfig';
 
+const createInitialGame = (difficulty) => {
+  const puzzle = generateSudoku(difficulty);
+  let firstEmpty = null;
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (puzzle.initial[r][c] === 0) {
+        firstEmpty = { row: r, col: c };
+        break;
+      }
+    }
+    if (firstEmpty) break;
+  }
+  return {
+    initialBoard: puzzle.initial,
+    currentBoard: puzzle.initial.map(row => [...row]),
+    solution: puzzle.solution,
+    selectedCell: firstEmpty || { row: 0, col: 0 }
+  };
+};
+
 export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
+  const [initialState] = useState(() => createInitialGame(initialDifficulty));
   const [difficulty, setDifficulty] = useState(initialDifficulty);
-  const [initialBoard, setInitialBoard] = useState(() => Array(9).fill(null).map(() => Array(9).fill(0)));
-  const [currentBoard, setCurrentBoard] = useState(() => Array(9).fill(null).map(() => Array(9).fill(0)));
-  const [solution, setSolution] = useState(() => Array(9).fill(null).map(() => Array(9).fill(0)));
+  const [initialBoard, setInitialBoard] = useState(initialState.initialBoard);
+  const [currentBoard, setCurrentBoard] = useState(initialState.currentBoard);
+  const [solution, setSolution] = useState(initialState.solution);
   const [notes, setNotes] = useState(() => Array(9).fill(null).map(() => Array(9).fill(null).map(() => [])));
   
-  const [selectedCell, setSelectedCell] = useState(null);
+  const [selectedCell, setSelectedCell] = useState(initialState.selectedCell);
   const [isNotesMode, setIsNotesMode] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -60,10 +81,6 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
   }, [difficulty]);
 
   useEffect(() => {
-    startNewGame(initialDifficulty);
-  }, []);
-
-  useEffect(() => {
     if (!isPaused && !isWon) {
       timerRef.current = setInterval(() => {
         setTimer(prev => prev + 1);
@@ -100,7 +117,7 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
 
     if (initialBoard[row][col] !== 0) return;
 
-    if (!isNotesMode && currentBoard[row][col] === num) return;
+    if (!isNotesMode && (currentBoard[row][col] === num || remainingNumbers[num] === 0)) return;
 
     setHistory(prev => [
       ...prev,
@@ -158,7 +175,7 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
         setIsWon(true);
       }
     }
-  }, [isPaused, isWon, selectedCell, initialBoard, currentBoard, notes, mistakes, isNotesMode, solution]);
+  }, [isPaused, isWon, selectedCell, initialBoard, currentBoard, notes, mistakes, isNotesMode, solution, remainingNumbers]);
 
   const erase = useCallback(() => {
     if (isPaused || isWon || !selectedCell) return;
@@ -249,9 +266,17 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
     setNotes(prev => {
       const newNotes = prev.map(r => r.map(c => [...c]));
       newNotes[target.r][target.c] = [];
+      const startRow = Math.floor(target.r / 3) * 3;
+      const startCol = Math.floor(target.c / 3) * 3;
+
       for (let i = 0; i < 9; i++) {
         newNotes[target.r][i] = newNotes[target.r][i].filter(n => n !== correctNum);
         newNotes[i][target.c] = newNotes[i][target.c].filter(n => n !== correctNum);
+      }
+      for (let r = startRow; r < startRow + 3; r++) {
+        for (let c = startCol; c < startCol + 3; c++) {
+          newNotes[r][c] = newNotes[r][c].filter(n => n !== correctNum);
+        }
       }
       return newNotes;
     });
@@ -262,8 +287,9 @@ export const useSudoku = (initialDifficulty = DEFAULT_DIFFICULTY) => {
   }, [isPaused, isWon, hintsRemaining, initialBoard, currentBoard, solution, selectedCell, notes, mistakes]);
 
   const toggleNotesMode = useCallback(() => {
+    if (isPaused || isWon) return;
     setIsNotesMode(prev => !prev);
-  }, []);
+  }, [isPaused, isWon]);
 
   const togglePause = useCallback(() => {
     if (isWon) return;

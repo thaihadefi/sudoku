@@ -3,6 +3,8 @@ import React from 'react';
 export const NumberPad = ({
   remainingNumbers,
   isNotesMode = false,
+  isPaused = false,
+  isWon = false,
   onInputNumber
 }) => {
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -20,7 +22,7 @@ export const NumberPad = ({
               type="button"
               className={`numpad-btn ${isCompleted ? 'numpad-btn-completed' : ''}`}
               onClick={() => onInputNumber(num)}
-              disabled={isCompleted && !isNotesMode}
+              disabled={(isCompleted && !isNotesMode) || isPaused || isWon}
               aria-label={`Digit ${num}, ${count} remaining`}
             >
               <span className="numpad-digit">{num}</span>

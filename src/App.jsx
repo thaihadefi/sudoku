@@ -39,6 +39,14 @@ export function App() {
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
+      if (e.key === ' ') {
+        e.preventDefault();
+        togglePause();
+        return;
+      }
+
+      if (isPaused || isWon) return;
+
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(e.key)) {
         e.preventDefault();
         const currentRow = selectedCell ? selectedCell.row : 0;
@@ -77,15 +85,12 @@ export function App() {
         undo();
       } else if (e.key === 'h' || e.key === 'H') {
         giveHint();
-      } else if (e.key === ' ') {
-        e.preventDefault();
-        togglePause();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCell, selectCell, inputNumber, erase, toggleNotesMode, undo, giveHint, togglePause]);
+  }, [selectedCell, selectCell, inputNumber, erase, toggleNotesMode, undo, giveHint, togglePause, isPaused, isWon]);
 
   return (
     <div className="app-container">
@@ -116,6 +121,8 @@ export function App() {
             canUndo={canUndo}
             isNotesMode={isNotesMode}
             hintsRemaining={hintsRemaining}
+            isPaused={isPaused}
+            isWon={isWon}
             onUndo={undo}
             onErase={erase}
             onToggleNotes={toggleNotesMode}
@@ -126,6 +133,8 @@ export function App() {
           <NumberPad
             remainingNumbers={remainingNumbers}
             isNotesMode={isNotesMode}
+            isPaused={isPaused}
+            isWon={isWon}
             onInputNumber={inputNumber}
           />
 
